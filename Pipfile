@@ -1,0 +1,28 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = "==0.108.0"
+uvicorn = "==0.23.2"
+langchain = "==0.1.10"
+langchain-core = "==0.1.28"
+langchain-community = "==0.0.25"
+langchain-google-genai = "*"
+google-generativeai = "*"
+redis = "*"
+qdrant-client = "==1.7.1"
+httpx = "*"
+websockets = "*"
+pydantic = ">=2.0.0"
+python-dotenv = "*"
+google-api-python-client = "*"
+google-auth = "*"
+google-auth-oauthlib = "*"
+google-auth-httplib2 = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
