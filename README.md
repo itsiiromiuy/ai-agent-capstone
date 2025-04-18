@@ -24,29 +24,14 @@ A versatile AI agent that integrates with multiple platforms through LangChain, 
 - `/add_pdfs` endpoint for learning from PDFs
 - `/add_texts` endpoint for learning from text
 
+### Emotion Detection Pipeline
+- User Input → Emotion Analysis → Response Selection → Personalized Output
+
 ## Installation and Setup
 
 1. Create a requirements.txt file in your project directory:
 ```bash
-cat > requirements.txt << EOF
-fastapi==0.108.0
-uvicorn==0.23.2
-langchain==0.1.10
-langchain_core==0.1.28
-langchain_community==0.0.25
-langchain-google-genai
-google-generativeai
-redis
-qdrant-client==1.7.1
-httpx
-websockets
-pydantic>=2.0.0
-python-dotenv
-google-api-python-client
-google-auth
-google-auth-oauthlib
-google-auth-httplib2
-EOF
+pipenv requirements > requirements.txt
 ```
 
 2. Install the dependencies using Pipenv:
