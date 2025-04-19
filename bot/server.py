@@ -15,6 +15,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 from .naming_master_prompt import SYSTEM_PROMPT
 from langgraph.checkpoint.redis import RedisSaver
+from langchain_core.message import (trim_messages)
 
 logger = logging.getLogger(__name__)
 
@@ -77,22 +78,12 @@ class MeimeiShi:
         self.chatmodel = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash-001",
             temperature=0,
-            streaming=True,
             google_api_key=api_key,
-            tool_call=True,
         )
 
         # Initialize the search tool
         self.tools = [search, get_info_from_local_db]
         self.chatmodel.bind_tools(self.tools)
-
-        # checkpointer = InMemorySaver()
-        # self.conversation = create_react_agent(
-        #     model=self.chatmodel,
-        #     tools=self.tools,
-        #     prompt=self.SYSTEMPL,
-        #     checkpointer=checkpointer
-        # )
 
         REDIS_URI = "redis://localhost:6379"
 

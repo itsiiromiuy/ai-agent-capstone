@@ -75,4 +75,11 @@ Then visit http://localhost:8000/docs to view the interactive API documentation.
 
 
 # Redis Stack
-docker run -e REDIS_ARGS="--requirepass mypassword" redis/redis-stack:latest
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+
+docker start redis-stack
+docker stop redis-stack
+docker rm redis-stack
+docker exec -it redis-stack redis-cli
+```
