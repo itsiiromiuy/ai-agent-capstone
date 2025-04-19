@@ -72,3 +72,7 @@ Then visit http://localhost:8000/docs to view the interactive API documentation.
 - Python 3.8+
 - Pipenv
 - API keys for selected LLM providers (OpenAI/Google)
+
+
+# Redis Stack
+docker run -e REDIS_ARGS="--requirepass mypassword" redis/redis-stack:latest

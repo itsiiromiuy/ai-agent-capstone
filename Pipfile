@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+pydantic=">2"
 uvicorn = "*"
 fastapi = "*"
 dotenv = "*"
@@ -12,6 +13,9 @@ langchain-google-genai = "*"
 langgraph = "*"
 langchain-community = "*"
 google-search-results = "*"
+langchain-qdrant = "*"
+langchain-google-vertexai = "*"
+langgraph-checkpoint-redis = "*"
 
 [dev-packages]
 
