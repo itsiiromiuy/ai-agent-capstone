@@ -11,6 +11,7 @@ langchain = "*"
 langchain-google-genai = "*"
 langgraph = "*"
 langchain-community = "*"
+google-search-results = "*"
 
 [dev-packages]
 

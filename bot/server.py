@@ -15,16 +15,26 @@ from langchain_core.prompts import (ChatPromptTemplate,
                                     MessagesPlaceholder,
                                     SystemMessagePromptTemplate)
 from langchain_core.runnables import RunnablePassthrough
+from langchain.agents import AgentType, initialize_agent, tool
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.utilities import SerpAPIWrapper
 
 from .naming_master_prompt import SYSTEM_PROMPT
 
 load_dotenv()
 app = FastAPI(title="Meimei Shi AI Chat API")
 
+# Load environment variables
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
-    raise ValueError("GOOGLE_API_KEY not found in environment variables")
+    raise ValueError("GOOGLE_API_KEY environment variable not set")
+
+
+@tool("Intermediate Answer")
+def search(query: str) -> str:
+    """Use Google Search to find information related to the query."""
+    search_tool = SerpAPIWrapper()
+    return search_tool.run(query)
 
 
 def load_system_prompt(file_path="naming_master_prompt.txt"):
@@ -63,20 +73,29 @@ class MeimeiShi:
             ("human", "{input}")
         ])
 
+        # Initialize the search tool
+        self.tools = [search]
+
         # Set up memory if needed
         self.MEMORY_KEY = "chat_history"
         self.memory = ConversationBufferMemory(
             memory_key=self.MEMORY_KEY, return_messages=True)
 
         # Create the conversation chain with memory
-        self.conversation = ConversationChain(
-            llm=self.chatmodel,
-            memory=self.memory,
-            prompt=ChatPromptTemplate.from_messages([
-                SystemMessagePromptTemplate.from_template(self.SYSTEMPL),
-                MessagesPlaceholder(variable_name=self.MEMORY_KEY),
-                HumanMessagePromptTemplate.from_template("{input}")
-            ]),
+        # self.conversation = ConversationChain(
+        #     llm=self.chatmodel,
+        #     memory=self.memory,
+        #     prompt=ChatPromptTemplate.from_messages([
+        #         SystemMessagePromptTemplate.from_template(self.SYSTEMPL),
+        #         MessagesPlaceholder(variable_name=self.MEMORY_KEY),
+        #         HumanMessagePromptTemplate.from_template("{input}")
+        #     ]),
+        #     verbose=True
+        # )
+        self.conversation = initialize_agent(
+            self.tools,
+            self.chatmodel,
+            agent=AgentType.SELF_ASK_WITH_SEARCH,
             verbose=True
         )
 
@@ -190,7 +209,7 @@ class MeimeiShi:
 
         # Generate response
         try:
-            response = emotion_aware_conversation.invoke({"input": query})
+            response = emotion_aware_conversation.run(query)
 
             if isinstance(response, dict) and 'output' in response:
                 message = response['output']
