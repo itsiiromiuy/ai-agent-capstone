@@ -142,9 +142,6 @@ class MeimeiShi:
                 "error": str(e)
             }
 
-    # Create a simple chain
-    # self.chain = self.prompt | self.chatmodel | (lambda x: x.content)
-
     def generate_emotion_aware_response(self, query: str) -> dict:
         """
         Generate a response that takes into account the emotional context of the query.
