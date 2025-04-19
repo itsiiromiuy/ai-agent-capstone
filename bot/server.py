@@ -1,18 +1,23 @@
+import json
 import os
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from typing import Dict, Any
+import re
+from typing import Any, Dict
+
 from dotenv import load_dotenv
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from langchain.schema import BaseOutputParser
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import RunnablePassthrough
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
 from langchain.schema.output_parser import StrOutputParser
+from langchain_core.prompts import (ChatPromptTemplate,
+                                    HumanMessagePromptTemplate,
+                                    MessagesPlaceholder,
+                                    SystemMessagePromptTemplate)
+from langchain_core.runnables import RunnablePassthrough
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 from .naming_master_prompt import SYSTEM_PROMPT
-import json
-import re
 
 load_dotenv()
 app = FastAPI(title="Meimei Shi AI Chat API")
