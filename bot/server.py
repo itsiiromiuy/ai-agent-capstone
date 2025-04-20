@@ -1,9 +1,10 @@
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import logging
 import os
 from typing import Any, Dict
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from langchain.schema import BaseOutputParser
 from langchain.agents import initialize_agent, tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.utilities import SerpAPIWrapper
@@ -15,9 +16,16 @@ from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 from .naming_master_prompt import SYSTEM_PROMPT
 from langgraph.checkpoint.redis import RedisSaver
-from langchain_core.message import (trim_messages)
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from vertexai import init
+
+
+# Initialize with your correct project
+init(project="ai-agent-capstone", location="us-central1")
 
 logger = logging.getLogger(__name__)
+LOCAL_QDRANT_PATH = "/Users/itsyuimorii/Documents/local_qdrant"
 
 load_dotenv()
 app = FastAPI(title="Meimei Shi AI Chat API")
@@ -40,9 +48,9 @@ def get_info_from_local_db(query: str) -> str:
     """Use Qdrant to find information related to the query."""
     try:
         qdrant = Qdrant(
-            QdrantClient(path="/local_qdrand"),
+            QdrantClient(path=LOCAL_QDRANT_PATH),
             "local_documents",
-            VertexAIEmbeddings(),
+            VertexAIEmbeddings(model="textembedding-gecko@001")
         )
         results = qdrant.similarity_search(query, k=3)
         return "\n\n".join(doc.page_content for doc in results) if results else "No relevant information found."
@@ -195,9 +203,21 @@ def analyze_emotion(query: str) -> Dict[str, Any]:
 
 
 @app.post("/add_urls")
-def add_urls():
-    """Endpoint to add URLs (placeholder)"""
-    return {"message": "URLs added successfully"}
+def add_urls(url: str):
+    """Learning knowledge from URLs and storing it in vector databases"""
+    loader = WebBaseLoader(url)
+    documents = loader.load()
+
+    document_chunks = RecursiveCharacterTextSplitter(
+        chunk_size=1000, chunk_overlap=50).split_documents(documents)
+
+    qdrantDB = Qdrant.from_documents(
+        document_chunks,
+        VertexAIEmbeddings(model_name="text-embedding-004"),
+        path=LOCAL_QDRANT_PATH,
+        collection_name="local_documents"
+    )
+    return {"message": "Successfully learned text blocks from url"}
 
 
 @app.post("/add_pdfs")

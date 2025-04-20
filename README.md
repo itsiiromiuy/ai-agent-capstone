@@ -1,85 +1,150 @@
-# AI Agent Capstone Project
+# Multi-Agent Knowledge Assistant: A LangGraph-based RAG System
 
-A versatile AI agent that integrates with multiple platforms through LangChain, supporting various interfaces and learning capabilities.
+## Google Gen AI Intensive Course Capstone Project 2025Q1
 
-## Project Architecture
+![Project Banner](https://i.imgur.com/placeholder.png)
 
-### Server Side
-- Interfaces with LangChain → OpenAI/Ollama
+## Overview
 
-### Client Side
-- Telegram bot
-- WeChat bot
-- Website
+This project demonstrates an intelligent multi-agent system that combines vector search, retrieval-augmented generation (RAG), and agent-based architecture to create a powerful knowledge assistant. The system employs a supervisor agent to orchestrate specialized agents, each with specific roles, to efficiently process user queries and manage knowledge.
 
-### Interfaces
-- HTTP
-- HTTPS
-- WebSocket
+### Key Features
 
-### Server
-- Interface access using FastAPI (Python)
-- `/chat` endpoint
-- `/add_urls` endpoint for learning from URLs
-- `/add_pdfs` endpoint for learning from PDFs
-- `/add_texts` endpoint for learning from text
+- **Supervisor-based Multi-Agent Coordination**: Intelligent task routing between specialized agents
+- **Local Vector Database**: Semantic storage and retrieval of information using ChromaDB
+- **Web Search Augmentation**: Finding information beyond the local knowledge base
+- **Knowledge Management**: Adding content from websites, PDFs, and raw text
+- **Real-time Interaction**: Both command-line and API interfaces with WebSocket support
 
-### Emotion Detection Pipeline
-- User Input → Emotion Analysis → Response Selection → Personalized Output
+## Gen AI Capabilities Demonstrated
 
-## Installation and Setup
+This project showcases **six** Gen AI capabilities (exceeding the minimum requirement of three):
 
-1. Create a requirements.txt file in your project directory:
+1. **Agents**: Implementation of a supervisor agent coordinating specialized worker agents
+2. **Function Calling**: LLM-powered tools for specific tasks like web search and knowledge base management
+3. **Retrieval Augmented Generation (RAG)**: Enhancing responses with information from a vector database
+4. **Vector Search/Vector Store**: Local ChromaDB implementation for semantic document retrieval
+5. **Structured Output/JSON mode**: Controlled generation for agent communication protocol
+6. **Embeddings**: Semantic understanding of documents using HuggingFace embeddings
+
+## System Architecture
+
+![System Architecture](https://i.imgur.com/placeholder2.png)
+
+The system follows a LangGraph-based flow:
+
+1. **Supervisor Agent**: Determines which specialized agent should handle a user query
+2. **Research Agent**: Retrieves information from the vector database or web
+3. **Knowledge Agent**: Manages the knowledge base by adding new information from various sources
+4. **Communication Agent**: Presents results to the user in a coherent manner
+
+## Use Case
+
+This system addresses the challenge of information overload by creating a personal knowledge assistant that can:
+
+- Answer questions using previously stored knowledge
+- Search the web when information isn't available locally
+- Learn from new information sources like websites, documents, and user inputs
+- Maintain context and coherence throughout conversations
+
+This makes it ideal for researchers, students, content creators, or anyone who needs to organize and retrieve information efficiently.
+
+## Implementation Details
+
+### Technology Stack
+
+- **LangGraph**: Agent workflow and state management
+- **LangChain**: Agent creation and tool calling
+- **Google Vertex AI (Gemini)**: Base LLM for all agents
+- **ChromaDB**: Vector storage for semantic search
+- **HuggingFace**: Sentence transformers for embeddings
+- **FastAPI**: API and WebSocket server
+
+### Key Components
+
+- **capstone_langgraph.py**: Core multi-agent system implementation
+- **example_usage.py**: Command-line interface for interacting with the system
+- **api_server.py**: FastAPI server for programmatic access and WebSocket support
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+- Google Vertex AI API access
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/multi-agent-knowledge-assistant.git
+   cd multi-agent-knowledge-assistant
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements_langgraph.txt
+   ```
+
+3. Set up your environment variables:
+   ```
+   GOOGLE_API_KEY=your_api_key_here
+   ```
+
+### Running the Application
+
+#### Command Line Interface
+
 ```bash
-pipenv requirements > requirements.txt
+python example_usage.py
 ```
 
-2. Install the dependencies using Pipenv:
+#### API Server
+
 ```bash
-pipenv install -r requirements.txt
+python api_server.py
 ```
 
-3. Run the server:
-```bash
-pipenv run python server.py
+The API will be available at `http://localhost:8000` with documentation at `http://localhost:8000/docs`.
+
+## Example Usage
+
+### Adding Knowledge
+
+```
+Enter your query: Add this website to your knowledge base: https://www.kaggle.com/competitions/gen-ai-intensive-course-capstone-2025q1
 ```
 
-You should see output similar to:
+### Querying Knowledge
+
 ```
-INFO: Started server process [17047]
-INFO: Waiting for application startup.
-INFO: Application startup complete.
-INFO: Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO: 127.0.0.1:59135 - "GET / HTTP/1.1" 200 OK
-INFO: 127.0.0.1:59135 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+Enter your query: What information do you have about the Kaggle Gen AI Intensive Course?
 ```
 
-4. For API documentation, run:
-```bash
-pipenv run uvicorn bot.server:app --reload
+### Combining Knowledge and Web Search
+
 ```
-Then visit http://localhost:8000/docs to view the interactive API documentation.
-
-## Features
-
-- Multi-platform integration (Telegram, WeChat, Web)
-- Learning capabilities from different sources (URLs, PDFs, text)
-- Real-time communication through WebSockets
-- Extensible architecture based on LangChain
-
-## Requirements
-
-- Python 3.8+
-- Pipenv
-- API keys for selected LLM providers (OpenAI/Google)
-
-
-# Redis Stack
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
-
-
-docker start redis-stack
-docker stop redis-stack
-docker rm redis-stack
-docker exec -it redis-stack redis-cli
+Enter your query: What's the latest research on multi-agent systems? Compare with what you know.
 ```
+
+## Limitations and Future Improvements
+
+- **Streaming Responses**: Add token-by-token streaming for more responsive user experience
+- **Improved Memory Management**: Implement more sophisticated memory systems for longer conversations
+- **Enhanced Web Search**: Integrate with more comprehensive search APIs
+- **Multi-modal Support**: Extend to understand images and other data types
+- **Collaborative Learning**: Allow the system to learn from multiple users' interactions
+
+## Conclusion
+
+This project demonstrates how modern LLM capabilities can be combined with agent-based architectures to create powerful knowledge management systems. By leveraging specialized agents, vector search, and RAG, we've created a system that can efficiently manage, retrieve, and communicate information to users.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Google Gen AI Intensive Course for the inspiration and knowledge
+- The LangChain and LangGraph teams for their excellent frameworks
+- Kaggle for hosting the capstone competition
