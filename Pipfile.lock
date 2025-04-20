@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "60b1fcd2ba8ad1fd199cbe47a26c7858785a0e36dfd56e2705d0eab33d9fc4db"
+            "sha256": "012b946ee95dce9c3456dd518ef99ee68cca4a9da717bf2db2a48f71bb233498"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1505,6 +1505,28 @@
             "markers": "python_version >= '3.9'",
             "version": "==2.9.1"
         },
+        "pymupdf": {
+            "hashes": [
+                "sha256:5a35e2725fae0ab57f058dff77615c15eb5961eac50ba04f41ebc792cd8facad",
+                "sha256:5f96311cacd13254c905f6654a004a0a2025b71cabc04fda667f5472f72c15a0",
+                "sha256:65e18ddb37fe8ec4edcdbebe9be3a8486b6a2f42609d0a142677e42f3a0614f8",
+                "sha256:6ed7fc25271004d6d3279c20a80cb2bb4cda3efa9f9088dcc07cd790eca0bc63",
+                "sha256:7f44bc3d03ea45b2f68c96464f96105e8c7908896f2fb5e8c04f1fb8dae7981e",
+                "sha256:cde4e1c9cfb09c0e1e9c2b7f4b787dd6bb34a32cfe141a4675e24af7c0c25dd3",
+                "sha256:d94b800e9501929c42283d39bc241001dd87fdeea297b5cb40d5b5714534452f",
+                "sha256:ee22155d3a634642d76553204867d862ae1bdd9f7cf70c0797d8127ebee6bed5"
+            ],
+            "markers": "python_version >= '3.9'",
+            "version": "==1.25.5"
+        },
+        "pymupdf4llm": {
+            "hashes": [
+                "sha256:77b49d5f8efd48ca3b7322f620afa4bcbb2a01d17079baeeb7ad04add434ce0b",
+                "sha256:cf78fc0957ed13f56cb531b3bc0546cb5ae543541e54ce7ec4194165549cfe2e"
+            ],
+            "index": "pypi",
+            "version": "==0.0.21"
+        },
         "python-dateutil": {
             "hashes": [
                 "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3",
@@ -1520,6 +1542,15 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==1.1.0"
+        },
+        "python-multipart": {
+            "hashes": [
+                "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104",
+                "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.0.20"
         },
         "python-ulid": {
             "hashes": [

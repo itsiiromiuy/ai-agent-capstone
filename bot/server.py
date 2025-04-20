@@ -1,10 +1,12 @@
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import logging
+import pymupdf
+
 import os
 from typing import Any, Dict
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile
 from langchain.agents import initialize_agent, tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.utilities import SerpAPIWrapper
@@ -19,7 +21,9 @@ from langgraph.checkpoint.redis import RedisSaver
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from vertexai import init
-
+from langchain_community.document_loaders import PyMuPDFLoader
+import pymupdf4llm
+from langchain.text_splitter import MarkdownTextSplitter
 
 # Initialize with your correct project
 init(project="ai-agent-capstone", location="us-central1")
@@ -149,7 +153,6 @@ class MeimeiShi:
             formatted_input = {
                 "messages": [{"role": "user", "content": query}]
             }
-
             config = {
                 "configurable": {
                     "thread_id": "1",
@@ -159,10 +162,8 @@ class MeimeiShi:
                     )
                 }
             }
-
             response = self.conversation.invoke(formatted_input, config)
             return response
-
         except Exception as e:
             logger.error(f"Error processing query: {str(e)}")
             return "I'm sorry, I encountered an error while processing your request."
@@ -221,8 +222,28 @@ def add_urls(url: str):
 
 
 @app.post("/add_pdfs")
-def add_pdfs():
+def add_pdfs(file: UploadFile):
     """Endpoint to add PDFs (placeholder)"""
+    document = pymupdf.open(stream=file.file.read())
+    md_text = pymupdf4llm.to_markdown(document)
+
+    splitter = MarkdownTextSplitter(
+        chunk_size=40,
+        chunk_overlap=0,
+    )
+
+    document_chunks = splitter.create_documents([md_text])
+
+    if not document_chunks:
+        return {"message": "No text was found in the uploaded PDF"}
+
+    qdrantDB = Qdrant.from_documents(
+        document_chunks,
+        VertexAIEmbeddings(model_name="text-embedding-004"),
+        path=LOCAL_QDRANT_PATH,
+        collection_name="local_documents"
+    )
+
     return {"message": "PDFs added successfully"}
 
 

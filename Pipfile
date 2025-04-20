@@ -16,6 +16,8 @@ google-search-results = "*"
 langchain-qdrant = "*"
 langchain-google-vertexai = "*"
 langgraph-checkpoint-redis = "*"
+pymupdf4llm = "*"
+python-multipart = "*"
 
 [dev-packages]
 
