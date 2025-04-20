@@ -54,7 +54,7 @@ def get_info_from_local_db(query: str) -> str:
         qdrant = Qdrant(
             QdrantClient(path=LOCAL_QDRANT_PATH),
             "local_documents",
-            VertexAIEmbeddings(model="textembedding-gecko@001")
+            VertexAIEmbeddings(model="text-embedding-004")
         )
         results = qdrant.similarity_search(query, k=3)
         return "\n\n".join(doc.page_content for doc in results) if results else "No relevant information found."
