@@ -42,21 +42,25 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 async def send_request(url, params):
     """Send requests to the AI server and handle responses"""
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(url, params=params) as response:
+    try:
+        data = {}
+        for key, value in params.items():
+            if value is not None:
+                data[key] = str(value)
+            else:
+                data[key] = ""
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data) as response:
                 if response.status == 200:
                     return await response.json()
                 else:
                     error_text = await response.text()
                     logger.error(f"Error {response.status}: {error_text}")
                     return {"message": f"Error: Server returned status {response.status}"}
-        except aiohttp.ClientError as e:
-            logger.error(f"Request error: {str(e)}")
-            return {"message": f"Connection error: {str(e)}"}
-        except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
-            return {"message": f"Unexpected error: {str(e)}"}
+    except Exception as e:
+        logger.error(f"Request error: {str(e)}")
+        return {"message": f"Error sending request: {str(e)}"}
 
 
 async def upload_file(url, file_path, filename=None):
@@ -144,17 +148,51 @@ async def chat_command(ctx, *, message=None):
         await ctx.send("Please provide a message to chat with the assistant.")
         return
 
-    async with ctx.typing():  # Show typing indicator while waiting for response
-        response = await send_request(CHAT_ENDPOINT, {"query": message})
+    # Use string formatting for logging
+    log_preview = str(message)[:20] + \
+        "..." if len(str(message)) > 20 else str(message)
+    logger.info(f"Chat command received with message: {log_preview}")
 
-        if response and "message" in response:
-            # Split long messages if needed (Discord has a 2000 character limit)
-            message_content = response["message"]
-            for i in range(0, len(message_content), 1900):
-                chunk = message_content[i:i+1900]
-                await ctx.send(chunk)
-        else:
-            await ctx.send("Sorry, I couldn't get a response from the server.")
+    try:
+        async with ctx.typing():
+            # Based on the server code, we need to send a JSON object with "query" key
+            json_data = {"query": message}
+            headers = {"Content-Type": "application/json"}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(CHAT_ENDPOINT, json=json_data, headers=headers) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        if "message" in result:
+                            message_content = result["message"]
+                            for i in range(0, len(message_content), 1900):
+                                chunk = message_content[i:i+1900]
+                                await ctx.send(chunk)
+                        else:
+                            await ctx.send("Server returned an invalid response")
+                    else:
+                        error_text = await response.text()
+                        await ctx.send(f"Error: {response.status} - {error_text[:100]}")
+
+                        # Try the simple_command approach as a fallback
+                        await ctx.send("Trying simple approach...")
+                        url = f"{SERVER_BASE_URL}/chat"
+
+                        # This is exactly what works in your simple_command function
+                        async with session.post(url, json={"query": message}) as simple_response:
+                            if simple_response.status == 200:
+                                simple_result = await simple_response.json()
+                                if "message" in simple_result:
+                                    simple_content = simple_result["message"]
+                                    await ctx.send(simple_content[:1900])
+                                else:
+                                    await ctx.send("Server returned an invalid response")
+                            else:
+                                simple_error = await simple_response.text()
+                                await ctx.send(f"Simple approach failed: {simple_response.status} - {simple_error[:100]}")
+    except Exception as e:
+        logger.error(f"Chat command error: {str(e)}")
+        await ctx.send(f"Error: {str(e)}")
 
 
 @bot.command(name='emotion', help='Chat with emotion-aware responses')
@@ -311,22 +349,102 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Process commands first (this is important!)
-    await bot.process_commands(message)
+    try:
+        # Process commands first (this is important!)
+        await bot.process_commands(message)
 
-    # If it's a DM and not a command, treat it as a chat message
-    if isinstance(message.channel, discord.DMChannel) and not message.content.startswith(bot.command_prefix):
-        async with message.channel.typing():
-            response = await send_request(CHAT_ENDPOINT, {"query": message.content})
+        # If it's a DM and not a command, treat it as a chat message
+        if isinstance(message.channel, discord.DMChannel) and not message.content.startswith(bot.command_prefix):
+            async with message.channel.typing():
+                response = await send_request(CHAT_ENDPOINT, {"query": message.content})
 
-            if response and "message" in response:
-                # Split long messages if needed
-                message_content = response["message"]
-                for i in range(0, len(message_content), 1900):
-                    chunk = message_content[i:i+1900]
-                    await message.channel.send(chunk)
-            else:
-                await message.channel.send("Sorry, I couldn't get a response from the server.")
+                if response and "message" in response:
+                    # Split long messages if needed
+                    message_content = response["message"]
+                    for i in range(0, len(message_content), 1900):
+                        chunk = message_content[i:i+1900]
+                        await message.channel.send(chunk)
+                else:
+                    await message.channel.send("Sorry, I couldn't get a response from the server.")
+    except Exception as e:
+        logger.error(f"Error in on_message: {str(e)}")
+
+
+@bot.command()
+async def problematic_command(ctx, *, message=None):
+    print("Command triggered with message:", message)
+    # 添加更多print语句来跟踪代码执行
+    # ...
+
+
+@bot.command(name='say', help='Alternative chat command')
+async def say_command(ctx, *, text=""):
+    """简单的替代命令，直接将文本发送到服务器"""
+    if not text:
+        await ctx.send("请提供消息内容")
+        return
+
+    try:
+        async with ctx.typing():
+            # 尝试不同的请求格式
+            async with aiohttp.ClientSession() as session:
+                # 尝试1: JSON格式
+                headers_json = {'Content-Type': 'application/json'}
+                json_data = {"query": text}
+
+                async with session.post(CHAT_ENDPOINT, json=json_data, headers=headers_json) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        if "message" in result:
+                            message_content = result["message"]
+                            await ctx.send(message_content[:1900])
+                        else:
+                            await ctx.send("服务器返回了无效的响应")
+                    else:
+                        error_text = await response.text()
+                        await ctx.send(f"服务器错误 ({response.status}): {error_text[:100]}")
+
+                        # 尝试2: 查询参数
+                        params = {"query": text}
+                        await ctx.send("尝试使用查询参数...")
+                        async with session.post(CHAT_ENDPOINT, params=params) as response2:
+                            if response2.status == 200:
+                                result2 = await response2.json()
+                                if "message" in result2:
+                                    await ctx.send(result2["message"][:1900])
+                                else:
+                                    await ctx.send("服务器返回了无效的响应(查询参数)")
+                            else:
+                                await ctx.send(f"查询参数也失败: {response2.status}")
+    except Exception as e:
+        await ctx.send(f"发生错误: {str(e)}")
+        logger.error(f"say命令中的错误: {str(e)}")
+
+
+@bot.command(name="simple")
+async def simple_command(ctx, *, text=""):
+    """最简单的命令，直接发送请求"""
+    if not text:
+        await ctx.send("请提供一条消息")
+        return
+
+    try:
+        # 直接在这里处理所有内容，不调用任何其他函数
+        async with aiohttp.ClientSession() as session:
+            url = f"{SERVER_BASE_URL}/chat"
+            # 尝试不同的请求方式
+            async with session.post(url, json={"query": text}) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    if "message" in result:
+                        await ctx.send(result["message"][:1900])
+                    else:
+                        await ctx.send("收到无效响应")
+                else:
+                    await ctx.send(f"服务器错误: {response.status}")
+    except Exception as e:
+        logger.error(f"Simple command error: {str(e)}")
+        await ctx.send(f"错误: {str(e)}")
 
 
 def main():
