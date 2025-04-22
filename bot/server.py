@@ -29,7 +29,7 @@ from langchain.text_splitter import MarkdownTextSplitter
 init(project="ai-agent-capstone", location="us-central1")
 
 logger = logging.getLogger(__name__)
-LOCAL_QDRANT_PATH = "/Users/itsyuimorii/Documents/local_qdrant"
+LOCAL_QDRANT_PATH = "/Users/itsyuimorii/Documents/github/local_qdrant"
 
 load_dotenv()
 app = FastAPI(title="Meimei Shi AI Chat API")
@@ -99,13 +99,24 @@ class MeimeiShi:
 
         REDIS_URI = "redis://localhost:6379"
 
-        with RedisSaver.from_conn_string(REDIS_URI) as checkpointer:
-            checkpointer.setup()
+        try:
+            with RedisSaver.from_conn_string(REDIS_URI) as checkpointer:
+                checkpointer.setup()
+                self.conversation = create_react_agent(
+                    model=self.chatmodel,
+                    tools=self.tools,
+                    prompt=self.SYSTEMPL,
+                    checkpointer=checkpointer
+                )
+        except Exception as e:
+            logger.error(f"Error initializing Redis: {str(e)}")
+            logger.info("Falling back to in-memory saver")
+            # Fallback to in-memory saver if Redis is unavailable
             self.conversation = create_react_agent(
                 model=self.chatmodel,
                 tools=self.tools,
                 prompt=self.SYSTEMPL,
-                checkpointer=checkpointer
+                checkpointer=InMemorySaver()
             )
 
     def emotion_detection_chain(self, query: str) -> Dict[str, Any]:
@@ -166,6 +177,26 @@ class MeimeiShi:
             return response
         except Exception as e:
             logger.error(f"Error processing query: {str(e)}")
+            # If there's an error with conversation state, reinitialize it
+            if "AIMessages with tool_calls" in str(e) or "INVALID_CHAT_HISTORY" in str(e):
+                logger.info("Reinitializing conversation due to invalid state")
+                try:
+                    # Reconnect to Redis and reinitialize the agent
+                    REDIS_URI = "redis://localhost:6379"
+                    with RedisSaver.from_conn_string(REDIS_URI) as checkpointer:
+                        checkpointer.setup()
+                        self.conversation = create_react_agent(
+                            model=self.chatmodel,
+                            tools=self.tools,
+                            prompt=self.SYSTEMPL,
+                            checkpointer=checkpointer
+                        )
+                    # Try again with the fresh conversation
+                    return self.run(query)
+                except Exception as reinit_error:
+                    logger.error(
+                        f"Failed to reinitialize conversation: {str(reinit_error)}")
+
             return "I'm sorry, I encountered an error while processing your request."
 
 
