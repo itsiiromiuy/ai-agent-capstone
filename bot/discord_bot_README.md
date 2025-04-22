@@ -21,7 +21,6 @@ This Discord bot serves as a client for your AI agent server, allowing users to 
 - Your AI agent server running
 
 ### Step 1: Create a Discord Bot
-
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
 2. Click on "New Application" and give your bot a name
 3. Navigate to the "Bot" tab and click "Add Bot"
@@ -68,13 +67,12 @@ pipenv install discord.py aiohttp python-dotenv
 
 ### Step 5: Run the Bot
 
-```bash
-python discord_client.py
-```
-
-Or if using pipenv:
+Navigate to the bot directory first
 
 ```bash
+cd bot
+
+# Then run the Discord client
 pipenv run python discord_client.py
 ```
 
@@ -82,7 +80,7 @@ pipenv run python discord_client.py
 
 Once the bot is running and added to your server, you can use the following commands:
 
-- `!help` - Shows all available commands
+- `!commands` - Shows all available commands
 - `!chat [message]` - Chat with the AI assistant
   - Example: `!chat What's the weather like today?`
 - `!emotion [message]` - Get emotion-aware responses
@@ -147,3 +145,14 @@ The bot uses:
 - aiohttp for asynchronous HTTP requests to your server
 - tempfile for temporary storage of uploaded files
 - FormData for multipart/form-data file uploads to the server 
+
+# Initialize bot with command prefix
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+# Disable the default help command
+bot.remove_command('help')
+
+# Now you can define your own help command
+@bot.command(name='help', help='Shows the available commands')
+async def help_command(ctx):
+    # Your help command code here 

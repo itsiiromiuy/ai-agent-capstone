@@ -18,6 +18,10 @@ langchain-google-vertexai = "*"
 langgraph-checkpoint-redis = "*"
 pymupdf4llm = "*"
 python-multipart = "*"
+"discord.py" = "*"
+aiohttp = "*"
+python-dotenv = "*"
+pynacl = "*"
 
 [dev-packages]
 

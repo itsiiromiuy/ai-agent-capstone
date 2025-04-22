@@ -95,7 +95,7 @@ async def on_ready():
     ))
 
 
-@bot.command(name='help', help='Shows the available commands')
+@bot.command(name='helpme', help='Shows the available commands')
 async def help_command(ctx):
     """Display help information"""
     embed = discord.Embed(
