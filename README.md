@@ -150,18 +150,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Kaggle for hosting the capstone competition
 
 # redis server
-- start redis server
- docker start redis-stack
-
-
-- you don't have it running yet, you might need to create it first, as mentioned in your README:
-
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
- 
-
-
-- You can check if Redis is running by using:
-docker ps | grep redis
-
-- Or try connecting to it directly:
-docker exec -it redis-stack redis-cli ping
+- start redis server: `docker start redis-stack`
+- If you don't have it running yet, you might need to create it first, as mentioned in your README:
+`docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest`
+- You can check if Redis is running by using: `docker ps | grep redis`
+- Or try connecting to it directly: `docker exec -it redis-stack redis-cli ping`
