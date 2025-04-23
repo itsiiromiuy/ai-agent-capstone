@@ -150,6 +150,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Kaggle for hosting the capstone competition
 
 # redis server
+- clean redis server: `docker stop redis-stack`
+- clean redis content: `redis-cli flushall`
 - start redis server: `docker start redis-stack`
 - If you don't have it running yet, you might need to create it first, as mentioned in your README:
 `docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest`

@@ -160,44 +160,20 @@ class MeimeiShi:
 
     def run(self, query: str) -> str:
         """Process user query and return response"""
-        try:
-            formatted_input = {
-                "messages": [{"role": "user", "content": query}]
+        formatted_input = {
+            "messages": [{"role": "user", "content": query}]
+        }
+        config = {
+            "configurable": {
+                "thread_id": "1",
+                "search_tool": any(
+                    kw in query.lower()
+                    for kw in ["current", "trending", "latest", "recent", "today"]
+                )
             }
-            config = {
-                "configurable": {
-                    "thread_id": "1",
-                    "search_tool": any(
-                        kw in query.lower()
-                        for kw in ["current", "trending", "latest", "recent", "today"]
-                    )
-                }
-            }
-            response = self.conversation.invoke(formatted_input, config)
-            return response
-        except Exception as e:
-            logger.error(f"Error processing query: {str(e)}")
-            # If there's an error with conversation state, reinitialize it
-            if "AIMessages with tool_calls" in str(e) or "INVALID_CHAT_HISTORY" in str(e):
-                logger.info("Reinitializing conversation due to invalid state")
-                try:
-                    # Reconnect to Redis and reinitialize the agent
-                    REDIS_URI = "redis://localhost:6379"
-                    with RedisSaver.from_conn_string(REDIS_URI) as checkpointer:
-                        checkpointer.setup()
-                        self.conversation = create_react_agent(
-                            model=self.chatmodel,
-                            tools=self.tools,
-                            prompt=self.SYSTEMPL,
-                            checkpointer=checkpointer
-                        )
-                    # Try again with the fresh conversation
-                    return self.run(query)
-                except Exception as reinit_error:
-                    logger.error(
-                        f"Failed to reinitialize conversation: {str(reinit_error)}")
-
-            return "I'm sorry, I encountered an error while processing your request."
+        }
+        response = self.conversation.invoke(formatted_input, config)
+        return response
 
 
 ai_agent = MeimeiShi()
@@ -255,6 +231,7 @@ def add_urls(url: str):
 @app.post("/add_pdfs")
 def add_pdfs(file: UploadFile):
     """Endpoint to add PDFs (placeholder)"""
+    # TODO this should be a util function so we can also call it from other interfaces (e.g. discord, or slack  etc...)
     document = pymupdf.open(stream=file.file.read())
     md_text = pymupdf4llm.to_markdown(document)
 
